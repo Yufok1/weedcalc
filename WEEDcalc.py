@@ -23,6 +23,9 @@ st.markdown(
             color: #222 !important;
             font-weight: bold;
             border: 2px solid #00FF00 !important;
+            width: 150px !important;
+            height: 40px !important;
+            font-size: 14px !important;
         }
         .stSlider > div > div {
             height: 8px !important;
