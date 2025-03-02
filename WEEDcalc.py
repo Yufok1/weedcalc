@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -36,8 +37,7 @@ st.markdown(
             border-radius: 5px;
         }
     </style>
-    """,
-    unsafe_allow_html=True
+    """, unsafe_allow_html=True
 )
 
 # Initialize session state
@@ -45,6 +45,28 @@ if "pot_log" not in st.session_state:
     st.session_state["pot_log"] = []
 if "base_pot" not in st.session_state:
     st.session_state["base_pot"] = 0
+
+# Calculate Global Statistics
+def get_global_stats():
+    pot_log = st.session_state["pot_log"]
+    total_bets = len(pot_log)
+    total_bet_amount = sum(bet["bet_size"] for bet in pot_log)
+    average_bet_size = total_bet_amount / total_bets if total_bets > 0 else 0
+    largest_bet = max((bet["bet_size"] for bet in pot_log), default=0)
+    smallest_bet = min((bet["bet_size"] for bet in pot_log), default=0)
+    return total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet
+
+# Display Global Stats
+if st.session_state["pot_log"]:
+    total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet = get_global_stats()
+    st.subheader("📊 Global Stats")
+    st.markdown(f"""
+    - **Total Bets:** {total_bets}
+    - **Total Bet Amount:** {total_bet_amount:.4f}
+    - **Average Bet Size:** {average_bet_size:.4f}
+    - **Largest Bet:** {largest_bet:.4f}
+    - **Smallest Bet:** {smallest_bet:.4f}
+    """)
 
 # Layout
 col1, col2 = st.columns([2, 1])
@@ -94,18 +116,18 @@ with col2:
 
         st.altair_chart(chart)
 
-        # Allow deletion of specific bets
         st.subheader("Remove a Logged Bet")
-        if st.session_state["pot_log"]:
-            bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f} split into {bet['parts']} parts of {bet['split_bet_size']:.4f} each" for i, bet in enumerate(st.session_state["pot_log"])]
-            col3, col4 = st.columns([3, 1])
-            with col3:
-                st.session_state["bet_to_remove"] = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
-            with col4:
-                st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
-                if st.button("Delete Selected Bet"):
-                    if "bet_to_remove" in st.session_state and st.session_state["bet_to_remove"]:
-                        index_to_remove = bet_labels.index(st.session_state["bet_to_remove"])
-                        del st.session_state["pot_log"][index_to_remove]
-                        st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+        bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f} split into {bet['parts']} parts of {bet['split_bet_size']:.4f} each" for i, bet in enumerate(st.session_state["pot_log"])]
+        col3, col4 = st.columns([3, 1])
+        with col3:
+            selected_bet = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
+        with col4:
+            st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
+            if st.button("Delete Selected Bet"):
+                if selected_bet:
+                    index_to_remove = bet_labels.index(selected_bet)
+                    del st.session_state["pot_log"][index_to_remove]
+                    st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.info("No bets logged yet. Start by entering your total pot and logging a bet.")
