@@ -56,7 +56,7 @@ with col1:
         st.session_state["base_pot"] = total_pot
 
     percentage = st.slider("Bet Percentage", min_value=1, max_value=100, value=50, step=1)
-    parts = st.number_input("Split into Parts", min_value=1, max_value=1000, value=1, step=1)
+    parts = st.number_input("Split into Parts", min_value=1, max_value=1000, value=2, step=1)
 
     if st.button("Log Bet"):
         if total_pot > 0:
@@ -97,8 +97,8 @@ with col2:
         # Allow deletion of specific bets
         st.subheader("Remove a Logged Bet")
         if st.session_state["pot_log"]:
-            bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f}" for i, bet in enumerate(st.session_state["pot_log"])]
-            col3, col4 = st.columns([3, 1])  # Adjust column width for better alignment
+            bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f} split into {bet['parts']} parts of {bet['split_bet_size']:.4f} each" for i, bet in enumerate(st.session_state["pot_log"])]
+            col3, col4 = st.columns([3, 1])
             with col3:
                 st.session_state["bet_to_remove"] = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
             with col4:
