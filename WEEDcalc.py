@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import io
 
 # Set page title and icon
 st.set_page_config(page_title="Bet Bud", page_icon="🍀")
@@ -55,6 +56,20 @@ def get_global_stats():
     smallest_bet = min((bet["bet_size"] for bet in pot_log), default=0)
     return total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet
 
+def export_bets_to_csv():
+    df = pd.DataFrame(st.session_state["pot_log"])
+    return df.to_csv(index=False).encode('utf-8')
+
+def import_bets_from_csv(uploaded_file):
+    df = pd.read_csv(uploaded_file)
+    required_columns = {"bet_size", "percentage", "parts", "split_bet_size"}
+    if required_columns.issubset(df.columns):
+        st.session_state["pot_log"] = df.to_dict('records')
+        st.success("Bet log successfully imported and replaced.")
+        st.experimental_rerun()
+    else:
+        st.error("CSV is missing required columns.")
+
 tabs = st.tabs(["Main", "Statistics"])
 
 with tabs[0]:
@@ -94,6 +109,20 @@ with tabs[1]:
             f"- **Average Bet Size:** {average_bet_size:.4f}\n"
             f"- **Largest Bet:** {largest_bet:.4f}\n"
             f"- **Smallest Bet:** {smallest_bet:.4f}"
+        )
+
+        st.subheader("📥 Import Bet Log")
+        uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
+        if uploaded_file:
+            import_bets_from_csv(uploaded_file)
+
+        st.subheader("📤 Export Bet Log")
+        csv = export_bets_to_csv()
+        st.download_button(
+            label="Download Bet Log as CSV",
+            data=csv,
+            file_name="bet_log.csv",
+            mime="text/csv",
         )
 
         df = pd.DataFrame({
