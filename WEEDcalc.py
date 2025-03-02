@@ -3,8 +3,8 @@ import pandas as pd
 import altair as alt
 
 # Set page title and icon
-st.set_page_config(page_title="WEEDcalc", page_icon="🍀")
-st.title("WEEDcalc")
+st.set_page_config(page_title="Bet Bud", page_icon="🍀")
+st.title("Bet Bud")
 
 # Apply custom styling
 st.markdown(
