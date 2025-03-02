@@ -26,6 +26,8 @@ st.markdown(
             width: 150px !important;
             height: 40px !important;
             font-size: 14px !important;
+        }
+        .delete-button > button {
             margin-left: -100px !important;
         }
         .stSlider > div > div {
@@ -98,7 +100,7 @@ with col2:
             bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f}" for i, bet in enumerate(st.session_state["pot_log"])]
             col3, col4 = st.columns([1, 3])
             with col3:
-                st.markdown("<div style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
+                st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
                 if st.button("Delete Selected Bet"):
                     if "bet_to_remove" in st.session_state and st.session_state["bet_to_remove"]:
                         index_to_remove = bet_labels.index(st.session_state["bet_to_remove"])
