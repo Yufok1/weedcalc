@@ -55,13 +55,21 @@ with col1:
     if st.button("Log Bet"):
         if total_pot > 0:
             bet_size = total_pot * (percentage / 100)
-            st.session_state["pot_log"].append({"bet_size": bet_size, "percentage": percentage, "parts": parts})
-            st.write("Log updated:", st.session_state["pot_log"])
+            split_bet_size = bet_size / parts  # Compute per-part bet size
+            st.session_state["pot_log"].append({
+                "bet_size": bet_size,
+                "percentage": percentage,
+                "parts": parts,
+                "split_bet_size": split_bet_size
+            })
+            st.success(f"Logged Bet: {bet_size:.4f} split into {parts} parts of {split_bet_size:.4f} each")
         else:
             st.error("Invalid Total Pot. Please input a valid number.")
 
+    # Full reset button
     if st.button("Reset"):
         st.session_state.clear()
+        st.rerun()  # Forces Streamlit to restart and clear all session data
 
 # Graph on the right
 with col2:
@@ -71,15 +79,10 @@ with col2:
             "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
         })
 
-        st.text("Current pot log before charting:")
-        st.text(str(st.session_state["pot_log"])[:100])
-
-        chart = alt.layer(
-            alt.Chart(df).mark_bar().encode(
-                x=alt.X("Entry:O", title="Log Entry"),
-                y=alt.Y("Bet Size:Q", title="Bet Size"),
-                color=alt.condition(alt.datum['Bet Size'] > 0, alt.value("green"), alt.value("red"))
-            )
-        ).properties(width=300, height=200)
+        chart = alt.Chart(df).mark_bar().encode(
+            x=alt.X("Entry:O", title="Log Entry"),
+            y=alt.Y("Bet Size:Q", title="Bet Size"),
+            color=alt.value("#00FF00")  # Consistent green color
+        ).properties(width=350, height=250)
 
         st.altair_chart(chart)
