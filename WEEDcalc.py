@@ -98,8 +98,10 @@ with col2:
         st.subheader("Remove a Logged Bet")
         if st.session_state["pot_log"]:
             bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f}" for i, bet in enumerate(st.session_state["pot_log"])]
-            col3, col4 = st.columns([1, 3])
+            col3, col4 = st.columns([3, 1])  # Adjust column width for better alignment
             with col3:
+                st.session_state["bet_to_remove"] = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
+            with col4:
                 st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
                 if st.button("Delete Selected Bet"):
                     if "bet_to_remove" in st.session_state and st.session_state["bet_to_remove"]:
@@ -107,5 +109,3 @@ with col2:
                         del st.session_state["pot_log"][index_to_remove]
                         st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
-            with col4:
-                st.session_state["bet_to_remove"] = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
