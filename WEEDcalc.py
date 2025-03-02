@@ -62,6 +62,10 @@ with col1:
                 "parts": parts,
                 "split_bet_size": split_bet_size
             })
+            
+            # Keep only the last 5 bets in session state
+            st.session_state["pot_log"] = st.session_state["pot_log"][-5:]
+            
             st.success(f"Logged Bet: {bet_size:.4f} split into {parts} parts of {split_bet_size:.4f} each")
         else:
             st.error("Invalid Total Pot. Please input a valid number.")
@@ -78,6 +82,9 @@ with col2:
             "Entry": range(1, len(st.session_state["pot_log"]) + 1),
             "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
         })
+        
+        # Ensure only the last 5 bets are shown
+        df = df.tail(5)
 
         chart = alt.Chart(df).mark_bar().encode(
             x=alt.X("Entry:O", title="Log Entry"),
@@ -86,3 +93,13 @@ with col2:
         ).properties(width=350, height=250)
 
         st.altair_chart(chart)
+
+        # Allow deletion of specific bets
+        st.subheader("Remove a Logged Bet")
+        if st.session_state["pot_log"]:
+            bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f}" for i, bet in enumerate(st.session_state["pot_log"])]
+            bet_to_remove = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
+            if st.button("Delete Selected Bet") and bet_to_remove:
+                index_to_remove = bet_labels.index(bet_to_remove)
+                del st.session_state["pot_log"][index_to_remove]
+                st.rerun()
