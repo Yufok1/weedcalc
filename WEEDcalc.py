@@ -26,7 +26,7 @@ st.markdown(
             width: 150px !important;
             height: 40px !important;
             font-size: 14px !important;
-            margin-left: -50px !important; /* Move button slightly to the left */
+            margin-left: -100px !important;
         }
         .stSlider > div > div {
             height: 8px !important;
@@ -59,25 +59,21 @@ with col1:
     if st.button("Log Bet"):
         if total_pot > 0:
             bet_size = total_pot * (percentage / 100)
-            split_bet_size = bet_size / parts  # Compute per-part bet size
+            split_bet_size = bet_size / parts
             st.session_state["pot_log"].append({
                 "bet_size": bet_size,
                 "percentage": percentage,
                 "parts": parts,
                 "split_bet_size": split_bet_size
             })
-
-            # Keep only the last 5 bets in session state
             st.session_state["pot_log"] = st.session_state["pot_log"][-5:]
-
             st.success(f"Logged Bet: {bet_size:.4f} split into {parts} parts of {split_bet_size:.4f} each")
         else:
             st.error("Invalid Total Pot. Please input a valid number.")
 
-    # Full reset button
     if st.button("Reset"):
         st.session_state.clear()
-        st.rerun()  # Forces Streamlit to restart and clear all session data
+        st.rerun()
 
 # Graph on the right
 with col2:
@@ -86,14 +82,12 @@ with col2:
             "Entry": range(1, len(st.session_state["pot_log"]) + 1),
             "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
         })
-
-        # Ensure only the last 5 bets are shown
         df = df.tail(5)
 
         chart = alt.Chart(df).mark_bar().encode(
             x=alt.X("Entry:O", title="Log Entry"),
             y=alt.Y("Bet Size:Q", title="Bet Size"),
-            color=alt.value("#00FF00")  # Consistent green color
+            color=alt.value("#00FF00")
         ).properties(width=350, height=250)
 
         st.altair_chart(chart)
