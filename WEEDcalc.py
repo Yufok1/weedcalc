@@ -44,6 +44,9 @@ st.markdown(
 
 if "pot_log" not in st.session_state:
     st.session_state["pot_log"] = []
+    # Add the 420.1337 base bet only if the pot_log is empty
+    st.session_state["pot_log"].append({"bet_size": 420.1337, "percentage": 100, "parts": 1, "split_bet_size": 420.1337})
+
 if "base_pot" not in st.session_state:
     st.session_state["base_pot"] = 0
 
@@ -83,6 +86,9 @@ with tabs[0]:
     parts = st.number_input("Split into Parts", min_value=1, max_value=1000, value=2, step=1)
 
     if st.button("Log Bet"):
+        # Remove the 420.1337 base bet if it's still present
+        if any(bet["bet_size"] == 420.1337 and bet["percentage"] == 100 and bet["parts"] == 1 for bet in st.session_state["pot_log"]):
+            st.session_state["pot_log"] = [bet for bet in st.session_state["pot_log"] if not (bet["bet_size"] == 420.1337 and bet["percentage"] == 100 and bet["parts"] == 1)]
         if total_pot > 0:
             bet_size = total_pot * (percentage / 100)
             split_bet_size = bet_size / parts
