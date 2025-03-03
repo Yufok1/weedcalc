@@ -124,11 +124,39 @@ if st.session_state["pot_log"]:
     df = pd.DataFrame({
         "Entry": range(1, len(st.session_state["pot_log"]) + 1),
         "Total Pot": [bet["total_pot"] for bet in st.session_state["pot_log"]],
-        "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
+        "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]],
+        "Percentage": [bet["percentage"] for bet in st.session_state["pot_log"]],
+        "Cumulative Bet Size": pd.Series([bet["bet_size"] for bet in st.session_state["pot_log"]]).cumsum(),
+        "Profit/Loss": pd.Series([bet["bet_size"] for bet in st.session_state["pot_log"]]).diff().fillna(0)
     })
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.altair_chart(generate_bar_chart(df), use_container_width=True)
-    with col2:
-        st.altair_chart(generate_line_chart(df), use_container_width=True)
+    # Generate five separate charts
+    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Total Pot:Q", title="Total Pot"),
+        color=alt.value("#FF0000")
+    ).properties(width=600, height=150), use_container_width=True)
+
+    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Bet Size:Q", title="Bet Size"),
+        color=alt.value("#00FF00")
+    ).properties(width=600, height=150), use_container_width=True)
+
+    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Percentage:Q", title="Percentage of Total Pot"),
+        color=alt.value("#0000FF")
+    ).properties(width=600, height=150), use_container_width=True)
+
+    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Cumulative Bet Size:Q", title="Cumulative Bet Size"),
+        color=alt.value("#FFFF00")
+    ).properties(width=600, height=150), use_container_width=True)
+
+    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
+        color=alt.value("#FF00FF")
+    ).properties(width=600, height=150), use_container_width=True)
