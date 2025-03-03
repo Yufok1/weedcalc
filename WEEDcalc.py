@@ -59,14 +59,15 @@ def export_bets_to_csv():
 def generate_bar_chart(df):
     return alt.Chart(df).mark_bar().encode(
         x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Bet Size:Q", title="Bet Size"),
+        y=alt.Y("Total Pot:Q", title="Total Pot Value"),
         color=alt.value("#00FF00")
     ).properties(width=600, height=300)
 
 def generate_line_chart(df):
+    df["Profit/Loss"] = df["Bet Size"].diff().fillna(0)
     return alt.Chart(df).mark_line(point=True).encode(
         x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Bet Size:Q", title="Bet Size"),
+        y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
         color=alt.value("#00FF00")
     ).properties(width=600, height=300)
 
@@ -82,6 +83,7 @@ with col1:
             bet_size = total_pot * (percentage / 100)
             split_bet_size = bet_size / parts
             st.session_state["pot_log"].append({
+                "total_pot": total_pot,
                 "bet_size": bet_size,
                 "percentage": percentage,
                 "parts": parts,
@@ -121,6 +123,7 @@ if st.session_state["pot_log"]:
 if st.session_state["pot_log"]:
     df = pd.DataFrame({
         "Entry": range(1, len(st.session_state["pot_log"]) + 1),
+        "Total Pot": [bet["total_pot"] for bet in st.session_state["pot_log"]],
         "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
     })
 
