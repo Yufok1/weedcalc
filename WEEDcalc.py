@@ -129,6 +129,30 @@ with col2:
             unsafe_allow_html=True
         )
 
+if st.session_state["pot_log"]:
+    stat_col, expander_col = st.columns([2, 1])
+
+    with stat_col:
+        st.subheader("📊 Global Statistics")
+        total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet = get_global_stats()
+        st.markdown(
+            f"- **Total Bets:** {total_bets}\n"
+            f"- **Total Bet Amount:** {total_bet_amount:.4f}\n"
+            f"- **Average Bet Size:** {average_bet_size:.4f}\n"
+            f"- **Largest Bet:** {largest_bet:.4f}\n"
+            f"- **Smallest Bet:** {smallest_bet:.4f}"
+        )
+
+        st.subheader("📤 Export Bet Log")
+        csv = export_bets_to_csv()
+        st.download_button(
+            label="Download Bet Log as CSV",
+            data=csv,
+            file_name="bet_log.csv",
+            mime="text/csv",
+        )
+
+    with expander_col:
         with st.expander("🔍 Expand for Full Chart & Trend Dynamics"):
             large_bars = alt.Chart(df).mark_bar().encode(
                 x=alt.X("Entry:O", title="Entry (Bet #)"),
@@ -161,24 +185,3 @@ with col2:
 
             Analyze the overall flow, spot patterns, and identify the volatility of your bets over time.
             """)
-
-# Global stats and CSV export remain below
-if st.session_state["pot_log"]:
-    st.subheader("📊 Global Statistics")
-    total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet = get_global_stats()
-    st.markdown(
-        f"- **Total Bets:** {total_bets}\n"
-        f"- **Total Bet Amount:** {total_bet_amount:.4f}\n"
-        f"- **Average Bet Size:** {average_bet_size:.4f}\n"
-        f"- **Largest Bet:** {largest_bet:.4f}\n"
-        f"- **Smallest Bet:** {smallest_bet:.4f}"
-    )
-
-    st.subheader("📤 Export Bet Log")
-    csv = export_bets_to_csv()
-    st.download_button(
-        label="Download Bet Log as CSV",
-        data=csv,
-        file_name="bet_log.csv",
-        mime="text/csv",
-    )
