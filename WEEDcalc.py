@@ -70,6 +70,8 @@ def import_bets_from_csv(uploaded_file):
     else:
         st.error("CSV is missing required columns.")
 
+graph_types = ["Bar Chart", "Line Chart", "Pie Chart"]
+
 tabs = st.tabs(["Main", "Statistics"])
 
 with tabs[0]:
@@ -125,33 +127,33 @@ with tabs[1]:
             mime="text/csv",
         )
 
+        st.subheader("📊 Select Graph Type")
+        selected_graph = st.selectbox("Choose a graph to display:", graph_types)
+
         df = pd.DataFrame({
             "Entry": range(1, len(st.session_state["pot_log"]) + 1),
             "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
         })
         df = df.tail(5)
 
-        st.subheader("📊 Recent Bet Sizes")
-        chart = alt.Chart(df).mark_bar().encode(
-            x=alt.X("Entry:O", title="Log Entry"),
-            y=alt.Y("Bet Size:Q", title="Bet Size"),
-            color=alt.value("#00FF00")
-        ).properties(width=600, height=300)
+        if selected_graph == "Bar Chart":
+            chart = alt.Chart(df).mark_bar().encode(
+                x=alt.X("Entry:O", title="Log Entry"),
+                y=alt.Y("Bet Size:Q", title="Bet Size"),
+                color=alt.value("#00FF00")
+            ).properties(width=600, height=300)
+        elif selected_graph == "Line Chart":
+            chart = alt.Chart(df).mark_line(point=True).encode(
+                x=alt.X("Entry:O", title="Log Entry"),
+                y=alt.Y("Bet Size:Q", title="Bet Size"),
+                color=alt.value("#00FF00")
+            ).properties(width=600, height=300)
+        elif selected_graph == "Pie Chart":
+            pie_df = df.copy()
+            pie_df["Bet Label"] = pie_df["Entry"].apply(lambda x: f"Entry {x}")
+            chart = alt.Chart(pie_df).mark_arc().encode(
+                theta=alt.Theta(field="Bet Size", type="quantitative"),
+                color=alt.Color(field="Bet Label", type="nominal")
+            ).properties(width=600, height=400)
 
         st.altair_chart(chart)
-
-        st.subheader("Remove a Logged Bet")
-        bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f} split into {bet['parts']} parts of {bet['split_bet_size']:.4f} each" for i, bet in enumerate(st.session_state["pot_log"])]
-        col3, col4 = st.columns([3, 1])
-        with col3:
-            selected_bet = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
-        with col4:
-            st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
-            if st.button("Delete Selected Bet"):
-                if selected_bet:
-                    index_to_remove = bet_labels.index(selected_bet)
-                    del st.session_state["pot_log"][index_to_remove]
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        st.info("No bets have been logged yet to calculate statistics.")
