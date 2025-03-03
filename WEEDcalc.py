@@ -23,17 +23,17 @@ st.markdown(
             color: #222 !important;
             font-weight: bold;
             border: 2px solid #00FF00 !important;
-            width: 150px !important;
-            height: 40px !important;
-            font-size: 14px !important;
+            width=150px !important;
+            height=40px !important;
+            font-size=14px !important;
         }
         .delete-button > button {
             margin-left: -100px !important;
         }
         .stSlider > div > div {
-            height: 8px !important;
+            height=8px !important;
             background: linear-gradient(to right, #00FF00, #FFFF00, #FF0000) !important;
-            border-radius: 5px;
+            border-radius=5px;
         }
     </style>
     """,
@@ -56,20 +56,39 @@ def export_bets_to_csv():
     df = pd.DataFrame(st.session_state["pot_log"])
     return df.to_csv(index=False).encode('utf-8')
 
-def generate_bar_chart(df):
-    return alt.Chart(df).mark_bar().encode(
+def generate_overlay_chart(df):
+    total_pot_chart = alt.Chart(df).mark_line(point=True).encode(
         x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Total Pot:Q", title="Total Pot Value"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=300)
+        y=alt.Y("Total Pot:Q", title="Total Pot"),
+        color=alt.value("#FF0000")
+    )
 
-def generate_line_chart(df):
-    df["Profit/Loss"] = df["Bet Size"].diff().fillna(0)
-    return alt.Chart(df).mark_line(point=True).encode(
+    bet_size_chart = alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Bet Size:Q", title="Bet Size"),
+        color=alt.value("#00FF00")
+    )
+
+    percentage_chart = alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Percentage:Q", title="Percentage of Total Pot"),
+        color=alt.value("#0000FF")
+    )
+
+    cumulative_chart = alt.Chart(df).mark_line(point=True).encode(
+        x=alt.X("Entry:O", title="Log Entry"),
+        y=alt.Y("Cumulative Bet Size:Q", title="Cumulative Bet Size"),
+        color=alt.value("#FFFF00")
+    )
+
+    profit_loss_chart = alt.Chart(df).mark_line(point=True).encode(
         x=alt.X("Entry:O", title="Log Entry"),
         y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=300)
+        color=alt.value("#FF00FF")
+    )
+
+    overlay_chart = (total_pot_chart + bet_size_chart + percentage_chart + cumulative_chart + profit_loss_chart)
+    return overlay_chart.properties(width='container', height=300)
 
 # Main page: Input, statistics, and graphs
 col1, col2 = st.columns([2, 1])
@@ -130,33 +149,4 @@ if st.session_state["pot_log"]:
         "Profit/Loss": pd.Series([bet["bet_size"] for bet in st.session_state["pot_log"]]).diff().fillna(0)
     })
 
-    # Generate five separate charts
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Total Pot:Q", title="Total Pot"),
-        color=alt.value("#FF0000")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Bet Size:Q", title="Bet Size"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Percentage:Q", title="Percentage of Total Pot"),
-        color=alt.value("#0000FF")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Cumulative Bet Size:Q", title="Cumulative Bet Size"),
-        color=alt.value("#FFFF00")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
-        color=alt.value("#FF00FF")
-    ).properties(width=600, height=150), use_container_width=True)
+    st.altair_chart(generate_overlay_chart(df), use_container_width=True)
