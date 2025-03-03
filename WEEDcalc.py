@@ -161,39 +161,14 @@ with tabs[1]:
         )
 
         # Graphs
-        st.subheader("📊 Graphs")
-        df = pd.DataFrame({
-            "Entry": range(1, len(st.session_state["pot_log"]) + 1),
-            "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]]
-        })
-        df = df.tail(5)
-
         col1, col2 = st.columns(2)
         with col1:
-            st.altair_chart(generate_bar_chart(df))
+            st.altair_chart(generate_bar_chart(df), use_container_width=True)
         with col2:
-            st.altair_chart(generate_line_chart(df))
+            st.altair_chart(generate_line_chart(df), use_container_width=True)
 
         col3, col4 = st.columns(2)
         with col3:
-            st.altair_chart(generate_pie_chart(df))
+            st.altair_chart(generate_pie_chart(df), use_container_width=True)
         with col4:
-            st.altair_chart(generate_win_loss_chart(df))
-
-        # Remove bet functionality
-        st.subheader("Remove a Logged Bet")
-        bet_labels = [f"Entry {i+1}: {bet['bet_size']:.4f} split into {bet['parts']} parts of {bet['split_bet_size']:.4f} each" for i, bet in enumerate(st.session_state["pot_log"])]
-        col3, col4 = st.columns([3, 1])
-        with col3:
-            selected_bet = st.selectbox("Select a bet to remove:", options=bet_labels, index=None)
-        with col4:
-            st.markdown("<div class='delete-button' style='width: 150px; display: inline-block;'>", unsafe_allow_html=True)
-            if st.button("Delete Selected Bet"):
-                if selected_bet:
-                    index_to_remove = bet_labels.index(selected_bet)
-                    del st.session_state["pot_log"][index_to_remove]
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        st.info("No bets have been logged yet to calculate statistics.")
-'''
+            st.altair_chart(generate_win_loss_chart(df), use_container_width=True)
