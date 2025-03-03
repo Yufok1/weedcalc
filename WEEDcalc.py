@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 
 # Set page title and icon
 st.set_page_config(page_title="Bet Bud", page_icon="🍀")
@@ -56,22 +55,7 @@ def export_bets_to_csv():
     df = pd.DataFrame(st.session_state["pot_log"])
     return df.to_csv(index=False).encode('utf-8')
 
-def generate_bar_chart(df):
-    return alt.Chart(df).mark_bar().encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Total Pot:Q", title="Total Pot Value"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=300)
-
-def generate_line_chart(df):
-    df["Profit/Loss"] = df["Bet Size"].diff().fillna(0)
-    return alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=300)
-
-# Main page: Input, statistics, and graphs
+# Main page: Input, statistics, and CSV export
 col1, col2 = st.columns([2, 1])
 with col1:
     total_pot = st.number_input("Total Pot", value=420.0, min_value=0.0, format="%.4f")
@@ -118,45 +102,3 @@ if st.session_state["pot_log"]:
         file_name="bet_log.csv",
         mime="text/csv",
     )
-
-# Graphs
-if st.session_state["pot_log"]:
-    df = pd.DataFrame({
-        "Entry": range(1, len(st.session_state["pot_log"]) + 1),
-        "Total Pot": [bet["total_pot"] for bet in st.session_state["pot_log"]],
-        "Bet Size": [bet["bet_size"] for bet in st.session_state["pot_log"]],
-        "Percentage": [bet["percentage"] for bet in st.session_state["pot_log"]],
-        "Cumulative Bet Size": pd.Series([bet["bet_size"] for bet in st.session_state["pot_log"]]).cumsum(),
-        "Profit/Loss": pd.Series([bet["bet_size"] for bet in st.session_state["pot_log"]]).diff().fillna(0)
-    })
-
-    # Generate five separate charts
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Total Pot:Q", title="Total Pot"),
-        color=alt.value("#FF0000")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Bet Size:Q", title="Bet Size"),
-        color=alt.value("#00FF00")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Percentage:Q", title="Percentage of Total Pot"),
-        color=alt.value("#0000FF")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Cumulative Bet Size:Q", title="Cumulative Bet Size"),
-        color=alt.value("#FFFF00")
-    ).properties(width=600, height=150), use_container_width=True)
-
-    st.altair_chart(alt.Chart(df).mark_line(point=True).encode(
-        x=alt.X("Entry:O", title="Log Entry"),
-        y=alt.Y("Profit/Loss:Q", title="Profit or Loss"),
-        color=alt.value("#FF00FF")
-    ).properties(width=600, height=150), use_container_width=True)
