@@ -56,7 +56,7 @@ def export_bets_to_csv():
     df = pd.DataFrame(st.session_state["pot_log"])
     return df.to_csv(index=False).encode('utf-8')
 
-# Main page layout
+# Layout with chart raised beside inputs
 col1, col2 = st.columns([2, 1])
 with col1:
     total_pot = st.number_input("Total Pot", value=420.0, min_value=0.0, format="%.4f")
@@ -82,31 +82,8 @@ with col1:
         st.session_state.clear()
         st.rerun()
 
-# Statistics and chart
-if st.session_state["pot_log"]:
-    total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet = get_global_stats()
-
-    stat_col, chart_col = st.columns([2, 1])
-    with stat_col:
-        st.subheader("📊 Global Statistics")
-        st.markdown(
-            f"- **Total Bets:** {total_bets}\n"
-            f"- **Total Bet Amount:** {total_bet_amount:.4f}\n"
-            f"- **Average Bet Size:** {average_bet_size:.4f}\n"
-            f"- **Largest Bet:** {largest_bet:.4f}\n"
-            f"- **Smallest Bet:** {smallest_bet:.4f}"
-        )
-
-        st.subheader("📤 Export Bet Log")
-        csv = export_bets_to_csv()
-        st.download_button(
-            label="Download Bet Log as CSV",
-            data=csv,
-            file_name="bet_log.csv",
-            mime="text/csv",
-        )
-
-    with chart_col:
+with col2:
+    if st.session_state["pot_log"]:
         df = pd.DataFrame({
             "Entry": range(1, len(st.session_state["pot_log"]) + 1),
             "Total Pot": [bet["total_pot"] for bet in st.session_state["pot_log"]],
@@ -140,19 +117,19 @@ if st.session_state["pot_log"]:
 
         st.markdown(
             """
-            <small>
-            <b>Entry</b>: Bet number · 
-            <b>Total Pot</b>: Pot value entered · 
+            <div style='font-size: 10px; line-height: 1.4;'>
+            <b>Entry</b>: Bet number<br>
+            <b>Total Pot</b>: Pot value entered<br>
             <b>Change</b>: Difference from previous pot<br>
-            <span style="color:#00FF00;"><b>Green bars</b></span> = Gains · 
-            <span style="color:#FF0000;"><b>Red bars</b></span> = Losses · 
+            <span style="color:#00FF00;"><b>Green bars</b></span> = Gains<br>
+            <span style="color:#FF0000;"><b>Red bars</b></span> = Losses<br>
             <span style="color:#FFFF00;"><b>Yellow line</b></span> = Total Pot over time
-            </small>
+            </div>
             """,
             unsafe_allow_html=True
         )
 
-        with st.expander("🔍 Expand for Full Chart & Meandering Analysis"):
+        with st.expander("🔍 Expand for Full Chart & Trend Dynamics"):
             large_bars = alt.Chart(df).mark_bar().encode(
                 x=alt.X("Entry:O", title="Entry (Bet #)"),
                 y=alt.Y("Change:Q", title="Change in Pot"),
@@ -181,6 +158,27 @@ if st.session_state["pot_log"]:
             - **Yellow Line**: Tracks your pot's journey over time.
             - **Green Bars**: Show gains from the previous entry.
             - **Red Bars**: Show losses from the previous entry.
-            
-            Look for streaks, spikes, and dips to understand the flow of your betting.
+
+            Analyze the overall flow, spot patterns, and identify the volatility of your bets over time.
             """)
+
+# Global stats and CSV export remain below
+if st.session_state["pot_log"]:
+    st.subheader("📊 Global Statistics")
+    total_bets, total_bet_amount, average_bet_size, largest_bet, smallest_bet = get_global_stats()
+    st.markdown(
+        f"- **Total Bets:** {total_bets}\n"
+        f"- **Total Bet Amount:** {total_bet_amount:.4f}\n"
+        f"- **Average Bet Size:** {average_bet_size:.4f}\n"
+        f"- **Largest Bet:** {largest_bet:.4f}\n"
+        f"- **Smallest Bet:** {smallest_bet:.4f}"
+    )
+
+    st.subheader("📤 Export Bet Log")
+    csv = export_bets_to_csv()
+    st.download_button(
+        label="Download Bet Log as CSV",
+        data=csv,
+        file_name="bet_log.csv",
+        mime="text/csv",
+    )
